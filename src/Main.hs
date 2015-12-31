@@ -1,7 +1,7 @@
 module Main where
+import           Control.Monad                 hiding (sequence)
+import           System.Environment            (getArgs)
 import           Text.ParserCombinators.Parsec
-import Control.Monad hiding (sequence)
-import System.Environment (getArgs)
 
 data Sequence = Sequence { id :: String, bases :: [Base] }
                 deriving (Show)
@@ -21,14 +21,12 @@ nucleobase = msum [ t <$ char c | (c, t) <- types ] <|> N <$ noneOf "+"
              , ('T', T)
              , ('U', U)]
 
-
 sequence :: Parser Sequence
 sequence = do
-    char '@'
+    _ <- char '@'
     id <- many1 (noneOf "\n")
     raw <- many1 nucleobase
-    char '+'
-    char '\n'
+    _ <- string "+\n"
     scores <- many1 (noneOf "\n")
     return $ Sequence id (zipWith Base raw scores)
 
