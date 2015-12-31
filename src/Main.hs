@@ -28,6 +28,7 @@ sequence = do
     raw <- many1 nucleobase
     _ <- string "+\n"
     scores <- many1 (noneOf "\n")
+    _ <- char '\n'
     return $ Sequence id (zipWith Base raw scores)
 
 
