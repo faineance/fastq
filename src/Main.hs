@@ -6,7 +6,7 @@ import           Text.ParserCombinators.Parsec
 data Sequence = Sequence { id :: String, bases :: [Base] }
                 deriving (Show)
 
-data Base = Base { key :: Nucleobase, score :: Char }
+data Base = Base { key :: Nucleobase, quality :: Char }
                 deriving (Eq, Show)
 
 data Nucleobase = A | C | G | T | U | N
@@ -27,9 +27,9 @@ sequence = do
     id <- many1 (noneOf "\n")
     raw <- many1 nucleobase
     _ <- string "+\n"
-    scores <- many1 (noneOf "\n")
+    qualities <- many1 (noneOf "\n")
     _ <- char '\n'
-    return $ Sequence id (zipWith Base raw scores)
+    return $ Sequence id (zipWith Base raw qualities)
 
 
 parseSeq :: String -> Either ParseError [Sequence]
