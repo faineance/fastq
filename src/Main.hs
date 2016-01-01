@@ -13,7 +13,7 @@ data Nucleobase = A | C | G | T | U | N
                 deriving (Eq, Show, Read)
 
 nucleobase :: Parser Nucleobase
-nucleobase = msum [ t <$ char c | (c, t) <- types ] <|> N <$ noneOf "+"
+nucleobase = msum [ t <$ char c | (c, t) <- types ] <|> N <$ noneOf "\n"
      where types =
              [ ('A', A)
              , ('C', C)
@@ -23,14 +23,17 @@ nucleobase = msum [ t <$ char c | (c, t) <- types ] <|> N <$ noneOf "+"
 
 sequence :: Parser Sequence
 sequence = do
-    _ <- char '@'
-    id <- many1 (noneOf "\n")
-    raw <- many1 nucleobase
-    _ <- string "+\n"
-    qualities <- many1 (noneOf "\n")
-    _ <- char '\n'
-    return $ Sequence id (zipWith Base raw qualities)
-
+            char '@'
+            id <- many1 (noneOf "\n")
+            newline
+            raw <- many1 nucleobase
+            newline
+            char '+'
+            skipMany (noneOf "\n")
+            newline
+            qualities <- many1 (noneOf "\n")
+            newline
+            return $ Sequence id (zipWith Base raw qualities)
 
 parseSeq :: String -> Either ParseError [Sequence]
 parseSeq = parse (many1 Main.sequence) ""
@@ -41,7 +44,9 @@ process contents = case parseSeq contents of
                         Left err -> print err
                         Right program -> print program
 
+seqcount :: [Sequence] -> Int
+seqcount = length
+
+
 main :: IO ()
-main = do
-  [file] <- getArgs
-  process =<< readFile file
+main = process =<< getContents
