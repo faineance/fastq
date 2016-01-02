@@ -1,8 +1,8 @@
 module Main where
 import           Control.Monad                 hiding (sequence)
-import           System.Environment            (getArgs)
 import           Text.ParserCombinators.Parsec
-
+import Data.List
+import System.Environment (getArgs)
 data Sequence = Sequence { id :: String, bases :: [Base] }
                 deriving (Show)
 
@@ -38,15 +38,32 @@ sequence = do
 parseSeq :: String -> Either ParseError [Sequence]
 parseSeq = parse (many1 Main.sequence) ""
 
-
 process :: String -> IO ()
 process contents = case parseSeq contents of
-                        Left err -> print err
-                        Right program -> print program
+        Left err -> print err
+        Right program -> do
+                        args <- getArgs
+                        case args of
+                            ["filter", nucleobases] -> do
+                                                        filtered <- seqfilter (parse (many1 nucleobase) "" nucleobases) program
+
+                                                        print filtered
+                            ["stats"] -> print (seqcount program)
+                            [] -> print program
+
+
+
+
+
+
+
 
 seqcount :: [Sequence] -> Int
 seqcount = length
 
+seqfilter :: [Nucleobase] -> [Sequence] -> [Sequence]
+seqfilter toKeep = filter f
+            where f (Sequence _ bases) = toKeep `isInfixOf` map key bases
 
 main :: IO ()
 main = process =<< getContents
