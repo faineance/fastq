@@ -44,18 +44,11 @@ process contents = case parseSeq contents of
         Right program -> do
                         args <- getArgs
                         case args of
-                            ["filter", nucleobases] -> do
-                                                        filtered <- seqfilter (parse (many1 nucleobase) "" nucleobases) program
-
-                                                        print filtered
+                            ["filter", nucleobases] -> case parse (many1 nucleobase) "" nucleobases of
+                                                            Left err -> print err
+                                                            Right parsednucleobases -> print (seqfilter parsednucleobases program)
                             ["stats"] -> print (seqcount program)
                             [] -> print program
-
-
-
-
-
-
 
 
 seqcount :: [Sequence] -> Int
